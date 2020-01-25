@@ -59,6 +59,18 @@ struct Process{
 			Curr=Curr->Next;
 		}
 	}
+
+	void PushRQueue(Job Temp){
+
+	}
+
+	void PushRQueue(Job* Temp, int Size){
+
+	}
+
+	void PushIQueue(Job Temp){
+
+	}
 	
 };
 class ReadyQueue{
@@ -127,16 +139,46 @@ int main(){
 	Job CPU;
 	IO.CPUType=false;
 	CPU.CPUType=true;
-	int Order=Town.Order[1];
+	int Next=Town.Order[1];
+	int Pos=1;
 
-
-	while(time<100){
-		//StackCPU.push(ProcessList[i].Head);
-		if(Town.Order[Order]==time){
-			Town.StackCPU.push(Town.ProcessList[Order].Head);
-			Order++;
-		}
+	while(CPU.time>0){
+		CPU.time--;
 		time++;
+	}
+
+	int OverBoard=0;
+	while(Pos<Town.Size){
+		time++;
+		OverBoard++;
+		CPU.time--;
+		if(Town.Order[Pos]==time){
+			// Figure out how to sort this
+			Town.StackCPU.push(Town.ProcessList[Pos].Head);
+			Pos++;
+		}
+
+
+		bool ChangeJob=false;
+		if(CPU.time<0 ){
+			if(CPU.Next==NULL){
+				ChangeJob=true;
+				CPU.State=IO_REQUEST;
+			}
+			else if(OverBoard>Town.quantom){
+				ChangeJob=true;
+				CPU.State=PREEMPTION;
+				
+			}
+
+		}
+		else if(ChangeJob){
+			CPU=*Town.StackCPU.top();
+			Town.StackCPU.pop();
+
+		}
+		else{
+		}
 	}
 
 
