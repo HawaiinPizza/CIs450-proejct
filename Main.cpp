@@ -15,8 +15,20 @@ struct Event{
 	Event(int left){
 		timeleft=left;
 	}
+	Event(int left, int proc, JobState temp){
+		timeleft=left;
+		process_id=proc;
+		type=temp;
+	}
 
-	void operator--(){
+	Event  operator--(int){
+		timeleft--;
+		if(timeleft>0){
+			return Event(timeleft,process_id,type);
+		}
+		else{
+			return Event(timeleft,process_id,IO_REQUEST );
+		}
 	}
 
 
@@ -61,6 +73,43 @@ struct Process{
 };
 
 
+struct Pointer{
+	int PointSize;
+
+	//This is to keep track of the next job that will arrive
+	int NextArrive=0;
+	int *JobTime;
+
+	//This is to keep track of the next job that will 
+	int NextJob=0;
+	Process *ProcessList;
+
+
+	int JobArrive(int time){
+		if(time < JobTime[NextArrive]){
+			cout << JobTime[NextArrive] <<"\tError get get job from next arrive\n";
+
+		}
+		for(int i=0; i<PointSize;i++){
+			if(JobTime[NextArrive]==time){
+				NextArrive++;
+				NextJob=NextArrive;
+			}
+		}
+		return NextJob;
+	}
+
+	Pointer(int* ArriveOrder, Process* ListProcess, int size){
+		JobTime=ArriveOrder;
+		ProcessList=ListProcess;
+		PointSize=size;
+
+
+	}
+
+};
+
+
 int main(){
 	/* the following pseudocode assumes C++ pointer syntax */
 	bool io_idle = true; 
@@ -94,25 +143,21 @@ int main(){
 	Event CurrJob;
 	int Order=Pos;
 	int ProcessSize=3;
+	Pointer Test(Arrival, PList, 3);
+	cout << Test.JobArrive(5) << endl;
+	cout << Test.JobArrive(3) << endl;
+	cout << Test.JobArrive(6) << endl;
 
 	// Important variables
 	// ProcessSize: Number of processess
 	// Arrival array: The time in which an array will arrive
 	// Pos: a pointer to the array, to show the NEXT process it will be running
 	// io_idle/cpu_idle: see if the cpu is not idle
-	while (JobsLeft>0)
-	{
-
-		//If job ran out of time/time quantom is less
-		sim_time++;
-		CurrJob--;
+	// Order is the next procses to arrive
+	//Event *ev = select and remove the earliest event from the event list;
 
 
 
-
-
-	}
-//	   //Event *ev = select and remove the earliest event from the event list;
 //	   int pid = ev->process_id;
 //	   while (sim_time < ev->time)
 //	      {sim_time = sim_time + 1; /* advance the simulation time */
