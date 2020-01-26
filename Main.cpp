@@ -1,192 +1,172 @@
-#include<stack>
+#include<queue>
 #include<iostream>
 #include<algorithm>
 using namespace std;
 
 enum JobState{ARRIVAL, PREEMPTION, IO_REQUEST, IO_DONE, TERMINATION};
-struct Job{
-	int time;
-	bool CPUType;
-	Job* Next;
-	JobState State=ARRIVAL;
 
-	void Dec(int delta){
-		time-=delta;
-	}
-	Job(int Time, bool CPU){
-		time=Time;
-		CPUType=CPU;
-	}
-	Job(){
-		time=NULL;
-		CPUType=NULL;
-	}
-} ;
+struct Event{
+	int process_id;
+	JobState type=ARRIVAL;
+	int timeleft;
 
+	Event(){
+	}
+	Event(int left){
+		timeleft=left;
+	}
+
+
+	
+};
 
 struct Process{
-	int size=0;
-	Job * Head=new Job;
-	int Arrival=0;
-	void Set(int* List, int Size, int ArrivalTime){
-		Arrival=ArrivalTime;
-		Job * Curr=new Job;
-		Curr=Head;
-		for(int i=0; i<=Size; i++){
-			Curr->time=List[i];
-			if(i%2==0)
-				Curr->CPUType=true;
-			else
-				Curr->CPUType=false;
 
-			Job * Temp=new Job;
-			Curr->Next=Temp;
-			Curr=Temp;
-		}
-		Curr->Next=NULL;
+	queue<Event> jobs;
+	int size;
+	int arrive;
+	int pos=0;
+
+	Process(int* Times, int Arrival, int Size){
+		arrive=Arrival;
 		size=Size;
-	}
-	Process(){
-	}
-	Process(int* List, int Size, int Arrival){
-		Set(List,  Size, Arrival);
-	}
-
-	void Print(){
-		Job * Curr=Head;
-		for(int i=0; i<=size; i++){
-			printf("Time:%d\tType:%d\n", Curr->time, Curr->CPUType);
-			Curr=Curr->Next;
+		for(int i=0; i<Size; i++){
+			Event temp;
+			temp=Times[i];
+			temp.process_id=Arrival;
+			jobs.push(temp);
 		}
 	}
 
-	void PushRQueue(Job Temp){
-
+	void print(){
+		for(int i=0; i<size; i++){
+			Event temp=jobs.front();
+			cout << temp.timeleft<<endl;
+			jobs.pop();
+		}
+		cout << endl;
 	}
 
-	void PushRQueue(Job* Temp, int Size){
-
+	Event pop(){
+		Event temp=jobs.front();
+		jobs.pop();
+		size=jobs.size();
+		pos++;
+		return temp;
 	}
-
-	void PushIQueue(Job Temp){
-
-	}
-	
-};
-class ReadyQueue{
-	public:
-		// Given the arguemnts of array of eventlist, time quantom, output log/stdout 
-		ReadyQueue(Process* Arr, int quantom, ostream& outlog, ostream& output, int ProcessSize){
-			ProcessList=Arr;
-			OutLog=&outlog;
-			OutStd=&output;
-			Size=ProcessSize;
-			Order=new int[ProcessSize];
-			GetOrder();
-		}
-
-		ReadyQueue(Process* Arr, int quantom, int ProcessSize){
-			ProcessList=Arr;
-			Size=ProcessSize;
-			Order=new int[ProcessSize];
-			GetOrder();
-		}
-
-		void GetOrder(){
-			for(int i=0; i<Size; i++){
-				Order[i]=ProcessList[i].Arrival;
-			}
-			sort(Order, Order+Size);
-			for(int i=0; i<Size; i++){
-				if(i%2==0){
-				}
-				else
-				{
-					StackIO.push(ProcessList[i].Head);
-				}
-
-			}
-		}
-
-		Process *ProcessList=new Process();
-		ostream * OutLog;
-		ostream * OutStd;
-		Job CpuProcess;
-		Job IOProcess;
-		int Size;
-		stack <Job*> StackCPU;
-		stack <Job*> StackIO;
-		int *Order;
-
 
 };
+
+
 int main(){
-	int Job1[]={2,5,8,7,4};
-	Process Test1(Job1,5, 3);
-	int Job2[]={ 4};
-	Process Test2(Job2,1, 5);
-	int Job3[]={ 8,2,10,2,7,5,6};
-	Process Test3(Job2,4, 6);
+	/* the following pseudocode assumes C++ pointer syntax */
+	bool io_idle = true; 
+	bool cpu_idle = true;
+	int sim_time = 0;
+	/*
+	   2 5 8 7	 4
+	   4
+	   8 2 10 2 	7 5 6
+	 */
+	int Arrival[3]={3,5,6};
+	int Pos=0;
+	int P3T[]={2,5,8,7,4};
+	int P5T[]={4};
+	int P6T[]={8,2,10,2,7,5,6};
+	queue<int> wow;
+	Process P3(P3T, 3, 5);
+	Process P5(P5T, 5, 1);
+	Process P6(P6T, 6, 7);
+	cout << "LALALALA\n";
+	Process PList[]={P3,P5,P6}; 
+	Event ev;
 
-	Process Temp[]={Test1,Test2, Test3};
-	Process * What=Temp;
 
-	ReadyQueue Town(What, 3, 3);
-
-	//Time to actually start
-	int time=Town.Order[0];
-	Job IO;
-	Job CPU;
-	IO.CPUType=false;
-	CPU.CPUType=true;
-	int Next=Town.Order[1];
-	int Pos=1;
-
-	while(CPU.time>0){
-		CPU.time--;
-		time++;
+	int JobsLeft=0;
+	for(int i=0; i<sizeof(PList)/sizeof(*PList); i++){
+		JobsLeft+=PList[i].size;
 	}
 
-	int OverBoard=0;
-	while(Pos<Town.Size){
-		time++;
-		OverBoard++;
-		CPU.time--;
-		if(Town.Order[Pos]==time){
-			// Figure out how to sort this
-			Town.StackCPU.push(Town.ProcessList[Pos].Head);
-			Pos++;
+	sim_time=Arrival[0];
+	Event CurrJob;
+	int Order=Pos;
+	int ProcessSize=3;
+
+	// Important variables
+	// ProcessSize: Number of processess
+	// Arrival array: The time in which an array will arrive
+	// Pos: a pointer to the array, to show the NEXT process it will be running
+	// io_idle/cpu_idle: see if the cpu is not idle
+	while (JobsLeft>0)
+	{
+		// If a new job comes in
+		if(Arrival[Order]==sim_time){
+			Pos=Order;
 		}
 
-
-		bool ChangeJob=false;
-		if(CPU.time<0 ){
-			if(CPU.Next==NULL){
-				ChangeJob=true;
-				CPU.State=IO_REQUEST;
-			}
-			else if(OverBoard>Town.quantom){
-				ChangeJob=true;
-				CPU.State=PREEMPTION;
-				
-			}
-
+		// IF CPU Idle 
+		if(cpu_idle){
+			cpu_idle=false;
+			CurrJob=PList[Pos].pop();
 		}
-		else if(ChangeJob){
-			CPU=*Town.StackCPU.top();
-			Town.StackCPU.pop();
 
-		}
-		else{
-		}
+		sim_time++;
+
+
+
 	}
-
-
-
-
-	
-
-
+//	   //Event *ev = select and remove the earliest event from the event list;
+//	   int pid = ev->process_id;
+//	   while (sim_time < ev->time)
+//	      {sim_time = sim_time + 1; /* advance the simulation time */
+//		/* output “no event” to log */
+//	   else
+//	     {  
+//	      switch (ev->type)
+//		{
+//		   case ARRIVAL:
+//		       /* create a new (simulated) process and place it in the Ready Queue */
+//		      ...
+//		       /* output “arrival event” to log */ 
+//		      break;
+//		  case PREEMPTION:
+//		      /* put the current process in the Ready Queue */
+//		      cpu_idle = TRUE;
+//		      ...
+//		  /* output “preemtion event” to log */
+//		      break;
+//		  case IO_REQUEST:
+//		       /* free CPU and move the current process into the I/O Queue */
+//		      cpu_idle = TRUE;
+//		      ...
+//		  /* output “I/O request event” to log */ 
+//		      break;
+//		  case IO_DONE:
+//		      /* free I/O device and put the process in the Ready Queue */
+//		      io_idle = TRUE;
+//		      ...
+//		  /* output “IO done event” to log */
+//		      break;
+//		  case TERMINATION:
+//		      /* free up the CPU, update statistics of the entire simulation */
+//		      cpu_idle = TRUE;
+//		      ...
+//		  /* output “termination event” to log */
+//		      break;
+//	       }
+//	       if (cpu_idle and there are jobs to dispatch) 
+//		{
+//		   cpu_idle = FALSE;
+//		   dispatch_a_process();  /* remove the first process from the Ready Queue */
+//		/* output “job dispatch event” to log */	
+//		 }
+//	       if (io_idle and there are jobs waiting to perform I/O)
+//	     {
+//		io_idle = FALSE;
+//		do_IO_operation (...); /* remove the first process from the I/O Queue */
+//		/* output “I/O operation event” to log */ 	
+//	     } 
+//	  } /* end switch */
+//	}   /* end if         */
 
 }
-
