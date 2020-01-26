@@ -8,6 +8,7 @@ enum JobState{ARRIVAL, PREEMPTION, IO_REQUEST, IO_DONE, TERMINATION};
 struct Event{
 	int process_id;
 	int timeleft;
+	bool wow;
 
 	Event(){
 	}
