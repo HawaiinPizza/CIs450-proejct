@@ -7,7 +7,6 @@ enum JobState{ARRIVAL, PREEMPTION, IO_REQUEST, IO_DONE, TERMINATION};
 
 struct Event{
 	int process_id;
-	JobState type=ARRIVAL;
 	int timeleft;
 
 	Event(){
@@ -15,19 +14,18 @@ struct Event{
 	Event(int left){
 		timeleft=left;
 	}
-	Event(int left, int proc, JobState temp){
+	Event(int left, int proc){
 		timeleft=left;
 		process_id=proc;
-		type=temp;
 	}
 
 	Event  operator--(int){
 		timeleft--;
 		if(timeleft>0){
-			return Event(timeleft,process_id,type);
+			return Event(timeleft,process_id);
 		}
 		else{
-			return Event(timeleft,process_id,IO_REQUEST );
+			return Event(timeleft,process_id);
 		}
 	}
 
@@ -41,6 +39,7 @@ struct Process{
 	int size;
 	int arrive;
 	int pos=0;
+	JobState type=ARRIVAL;
 
 	Process(int* Times, int Arrival, int Size){
 		arrive=Arrival;
@@ -51,6 +50,10 @@ struct Process{
 			temp.process_id=Arrival;
 			jobs.push(temp);
 		}
+	}
+
+	bool empty(){
+		return jobs.empty();
 	}
 
 	void print(){
@@ -86,17 +89,34 @@ struct Pointer{
 
 
 	int JobArrive(int time){
-		if(time < JobTime[NextArrive]){
-			cout << JobTime[NextArrive] <<"\tError get get job from next arrive\n";
-
-		}
 		for(int i=0; i<PointSize;i++){
 			if(JobTime[NextArrive]==time){
-				NextArrive++;
 				NextJob=NextArrive;
+				NextArrive++;
 			}
 		}
 		return NextJob;
+	}
+
+	void SwapProcess(){
+	}
+
+	Event GetEvent(){
+		Event temp=ProcessList[NextJob].pop();
+
+		int i=0;
+		if(ProcessList[NextJob].empty()){
+			cout << "Job\n";
+			NextJob--;
+		}
+		if(i>=PointSize){
+			return ProcessList[NextJob].pop();
+		}
+		else{
+			cout << "YES";
+			cout << "We're done \n";
+			return Event(-1);
+		}
 	}
 
 	Pointer(int* ArriveOrder, Process* ListProcess, int size){
@@ -129,24 +149,18 @@ int main(){
 	Process P3(P3T, 3, 5);
 	Process P5(P5T, 5, 1);
 	Process P6(P6T, 6, 7);
-	cout << "LALALALA\n";
 	Process PList[]={P3,P5,P6}; 
-	Event ev;
-
-
-	int JobsLeft=0;
-	for(int i=0; i<sizeof(PList)/sizeof(*PList); i++){
-		JobsLeft+=PList[i].size;
-	}
-
 	sim_time=Arrival[0];
 	Event CurrJob;
-	int Order=Pos;
 	int ProcessSize=3;
-	Pointer Test(Arrival, PList, 3);
-	cout << Test.JobArrive(5) << endl;
-	cout << Test.JobArrive(3) << endl;
-	cout << Test.JobArrive(6) << endl;
+	Pointer Test(Arrival, PList, ProcessSize);
+	while(CurrJob.timeleft!=-1){
+		cout << "WHAT\n";
+		CurrJob=Test.GetEvent();
+	}
+
+
+
 
 	// Important variables
 	// ProcessSize: Number of processess
