@@ -16,6 +16,9 @@ struct Event{
 		timeleft=left;
 	}
 
+	void operator--(){
+	}
+
 
 	
 };
@@ -99,18 +102,12 @@ int main(){
 	// io_idle/cpu_idle: see if the cpu is not idle
 	while (JobsLeft>0)
 	{
-		// If a new job comes in
-		if(Arrival[Order]==sim_time){
-			Pos=Order;
-		}
 
-		// IF CPU Idle 
-		if(cpu_idle){
-			cpu_idle=false;
-			CurrJob=PList[Pos].pop();
-		}
-
+		//If job ran out of time/time quantom is less
 		sim_time++;
+		CurrJob--;
+
+
 
 
 
