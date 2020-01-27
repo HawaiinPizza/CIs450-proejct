@@ -3,7 +3,7 @@
 #include<algorithm>
 using namespace std;
 
-enum JobState{ARRIVAL, PREEMPTION, IO_REQUEST, IO_DONE, TERMINATION, GOD};
+enum JobState{ARRIVAL, PREEMPTION, IO_REQUEST, IO_DONE, TERMINATION };
 
 
 struct Event{
@@ -37,6 +37,11 @@ struct Event{
 		process_id=Process;
 		isCPU=CPU;
 		}
+	Event(){
+		time=-1;
+		process_id=-1;
+		isCPU=false;
+		}
 	};
 
 struct point{
@@ -44,6 +49,8 @@ struct point{
 	int* Order;
 	int Qunatom;
 	int size;
+	Event CPU;
+	Event IO;
 
 	int WhenNext(){
 		if(Pos<size)
@@ -64,6 +71,19 @@ struct point{
 	point(int* Temp, int Size){
 		Order=Temp;
 		size=Size;
+	}
+
+	void ChangeJob(Event newJob){
+		if(newJob.isCPU)
+			CPU=newJob;
+		else
+			IO=newJob;
+	}
+
+	bool IsEmpty(){
+		if(CPU.process_id!=-1 && IO.process_id!=-1)
+			return false;
+		return true;
 	}
 };
 
@@ -108,6 +128,7 @@ int main(){
 	 */
 
 	queue<Process> ReadyQueue;
+	queue<Process> IO;
 
 	int P1[]={2,5,8,7,4};
 	int P2[]={4};
@@ -134,64 +155,69 @@ int main(){
 			All.pop();
 			Pointer.NextNow();
 		}
-		
-		if(CurrJob.process_id!=-1){
-				printf(" Runtime:%d,   id%d,   cpu%d   state%d, size%d\t",  CurrJob.time, CurrJob.process_id, CurrJob.isCPU, CurrJob.State, ReadyQueue.front().Jobs.size());
 
-				CurrJob--;
-				switch(CurrJob.State){
+		
+		// CPU Handling
+		if(Pointer.CPU.process_id!=-1){
+				printf(" Runtime:%d,   id%d,   cpu%d    size%d\t",  Pointer.CPU.time, Pointer.CPU.process_id, Pointer.CPU.isCPU, ReadyQueue.front().Jobs.size());
+
+				Pointer.CPU--;
+				switch(Pointer.CPU.State){
 					case ARRIVAL:
 						cout << "ARRIVE\t";
 						break;
 					case PREEMPTION:
 						cout << "PREEMPTION\t";
 						break;
+						//Modify as to push teh next io job to IO queue. Than, let another process run
+						//So if P1 is in CPU, than have P1 be in I/O, P2 in CPU, and P1 is pushed to queue.
 					case IO_REQUEST:
 						cout << "IO_REQUEST\t";
 						if(!ReadyQueue.front().empty() ){
-							CurrJob=ReadyQueue.front().pop();
+							Pointer.CPU=ReadyQueue.front().pop();
 							break;
 						}
 						else{
 							cout << "YEAAA!";
-							CurrJob.State=TERMINATION;
+							Pointer.CPU.State=TERMINATION;
 							break;
 						}
+						//Modify as to push teh next io job to CPU queue. Than, let another process run
+						//So if P1 is in I/O, than have P1 be in CPU, P2 in IO, and P1 is pushed to queue.
 					case IO_DONE:
 						cout << "IO_DONE\t";
 						if(!ReadyQueue.front().empty()){
-							CurrJob=ReadyQueue.front().pop();
+							Pointer.CPU=ReadyQueue.front().pop();
 							break;
 						}
 						else{
-							cout << "WHY GOD!\t";
-							CurrJob.State=TERMINATION;
+							Pointer.CPU.State=TERMINATION;
 							break;
 						}
 					case TERMINATION :
 						cout << "TERMINATION\t";
-						if( ReadyQueue.size()==1)
+						if( ReadyQueue.size()==1){
 							cout << "FINISH YES\t";
+							ReadyQueue.pop();
+							Pointer.CPU.process_id=-1;
+						}
 						else{
 							cout << ReadyQueue.size() << " Before size\t";
 							ReadyQueue.pop();
 							cout << ReadyQueue.size() << " After size\t";
-							CurrJob=ReadyQueue.front().pop();
+							Pointer.CPU=ReadyQueue.front().pop();
 						}
 
-						break;
-					case GOD:
-						cout << "FLORAIA";
 						break;
 				}
 		}
 		else if (CurrJob.process_id==-1){
 			if(!ReadyQueue.empty() && !ReadyQueue.front().empty() ){
-				CurrJob=ReadyQueue.front().pop();
+				Pointer.CPU=ReadyQueue.front().pop();
 				cout << "Queue job: " << ReadyQueue.size() << '\t';
 			}
 			else
-				printf("Queue is empty %d:\t%d", i, ReadyQueue.size());
+				printf("Queue is empty ");
 				
 		}
 
