@@ -10,7 +10,7 @@ struct Event{
 	int time;
 	int process_id;
 	bool isCPU;
-	JobState State=ARRIVAL;
+	JobState State;
 
 	void operator--(int){
 		time--;
@@ -36,6 +36,10 @@ struct Event{
 		time=Arr;
 		process_id=Process;
 		isCPU=CPU;
+		if(isCPU==1)
+			State=ARRIVAL;
+		else
+			State=PREEMPTION;
 		}
 	Event(){
 		time=-1;
@@ -84,6 +88,11 @@ struct point{
 		if(CPU.process_id!=-1 && IO.process_id!=-1)
 			return false;
 		return true;
+	}
+
+	void operator--(int){
+		CPU--;
+		IO--;
 	}
 };
 
@@ -147,6 +156,7 @@ int main(){
 	
 	//while(!ReadyQueue.empty() && !All.empty())
 	int Pos=0;
+	Pointer.IO.State=TERMINATION;
 	while(i<100){
 		cout << i << '\t';
 		if(Pointer.WhenNext()==i){
@@ -161,7 +171,7 @@ int main(){
 		if(Pointer.CPU.process_id!=-1){
 				printf(" Runtime:%d,   id%d,   cpu%d    size%d\t",  Pointer.CPU.time, Pointer.CPU.process_id, Pointer.CPU.isCPU, ReadyQueue.front().Jobs.size());
 
-				Pointer.CPU--;
+				Pointer--;
 				switch(Pointer.CPU.State){
 					case ARRIVAL:
 						cout << "ARRIVE\t";
@@ -174,6 +184,7 @@ int main(){
 					case IO_REQUEST:
 						cout << "IO_REQUEST\t";
 						if(!ReadyQueue.front().empty() ){
+							Pointer.IO=ReadyQueue.front().pop();
 							Pointer.CPU=ReadyQueue.front().pop();
 							break;
 						}
@@ -184,17 +195,6 @@ int main(){
 						}
 						//Modify as to push teh next io job to CPU queue. Than, let another process run
 						//So if P1 is in I/O, than have P1 be in CPU, P2 in IO, and P1 is pushed to queue.
-					// Changing code so there's a switch case for CPU and IO seperatly
-					case IO_DONE:
-						cout << "IO_DONE\t";
-						if(!ReadyQueue.front().empty()){
-							Pointer.CPU=ReadyQueue.front().pop();
-							break;
-						}
-						else{
-							Pointer.CPU.State=TERMINATION;
-							break;
-						}
 					case TERMINATION :
 						cout << "TERMINATION\t";
 						if( ReadyQueue.size()==1){
@@ -210,6 +210,18 @@ int main(){
 						}
 
 						break;
+				}
+				printf("\t\t\t Runtime:%d,   id%d,   cpu%d    size%d\t",  Pointer.IO.time, Pointer.IO.process_id, Pointer.IO.isCPU, ReadyQueue.front().Jobs.size());
+				switch(Pointer.IO.State){
+					case ARRIVAL:
+						cout << "ARRIVE of IARRIVE of IOOARRIVE of IO\t";
+						break;
+					case IO_DONE:
+						cout << "IO_DONE\t";
+						Pointer.CPU=ReadyQueue.front().pop();
+						Pointer.IO=ReadyQueue.front().pop();
+						break;
+
 				}
 		}
 		else if (CurrJob.process_id==-1){
