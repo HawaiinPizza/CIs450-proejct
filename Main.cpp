@@ -6,6 +6,93 @@ using namespace std;
 enum JobState{ARRIVAL, PREEMPTION, IO_REQUEST, IO_DONE, TERMINATION};
 
 
+struct Event{
+	int time;
+	int process_id;
+	bool isCPU;
+	JobState State=ARRIVAL;
+
+	void operator--(int){
+		time--;
+		if(time<1){
+			if(isCPU){
+				cout << "YES";
+				State=IO_REQUEST;
+			}
+			else
+			{
+				cout << "YES";
+				State=IO_DONE;
+			}
+		}
+	}
+
+	void operator=(const Event& temp){
+		time=temp.time;
+		process_id=temp.process_id;
+		isCPU=temp.isCPU;
+	}
+
+	Event(int Arr,  int Process, bool CPU){
+		time=Arr;
+		process_id=Process;
+		isCPU=CPU;
+		}
+	};
+
+struct point{
+	int Pos=0;
+	int* Order;
+	int Qunatom;
+	int size;
+
+	int WhenNext(){
+		if(Pos<size)
+			return Order[Pos];	
+		else
+			return -1;
+	}
+
+
+	bool NextNow(){
+		if(Pos<size ){
+			Pos++;
+			return true;
+		}
+		return false;
+	}
+
+	point(int* Temp, int Size){
+		Order=Temp;
+		size=Size;
+	}
+};
+
+struct Process{
+	queue<Event> Jobs;
+	Process(int *Arr, int size, int Process){
+		for(int i=size-1; i>-1; i--){
+
+			if(i%2==0)
+				Jobs.push(Event(Arr[i], Process, true));
+			else
+				Jobs.push(Event(Arr[i], Process, false));
+
+		}
+	}
+
+	Event pop(){
+		Event temp=Jobs.front();
+		Jobs.pop();
+		return temp;
+	}
+
+	bool empty(){
+		return Jobs.empty();
+	}
+
+};
+
 int main(){
 	/* the following pseudocode assumes C++ pointer syntax */
 	bool io_idle = true; 
@@ -16,6 +103,58 @@ int main(){
 	   4
 	   8 2 10 2 	7 5 6
 	 */
+
+	queue<Process> ReadyQueue;
+
+	int P1[]={2,5,8,7,4};
+	int P2[]={4};
+	int P3[]={8,2,10,2,7,5,6};
+	Process Pp1(P1, 5, 1);
+	Process Pp2(P2, 5, 2);
+	Process Pp3(P3, (4+3), 3);
+	queue<Process> All;
+	All.push(Pp1);
+	All.push(Pp2);
+	All.push(Pp3);
+	int ArrivalTime[]={3,5,6};
+	int i=0;
+	point Pointer(ArrivalTime, 3);
+	Event CurrJob(-1,-1,false);
+	
+	//while(!ReadyQueue.empty() && !All.empty())
+	while(i<50){
+		cout << i << '\t';
+		if(Pointer.WhenNext()==i){
+			ReadyQueue.push(All.front());
+			cout << "New job: " << ReadyQueue.size() << '\t';
+			All.pop();
+			Pointer.NextNow();
+		}
+
+		if(!ReadyQueue.empty() && !ReadyQueue.front().empty() )
+		{
+			printf("Runtime of %d, of process id %d\t", CurrJob.time, CurrJob.process_id);
+			CurrJob--;
+			if(CurrJob.State==IO_REQUEST ||  CurrJob.State==IO_DONE){
+				CurrJob=ReadyQueue.front().pop();
+			}
+		}
+		else if(!ReadyQueue.empty() && ReadyQueue.front().empty()) {
+			printf("Queue is empty %d:\t%d", i, ReadyQueue.size());
+		}
+		else{
+			cout << "New job coming in\t";
+			//CurrJob=ReadyQueue.front().pop();
+		}
+
+
+		cout << endl;
+
+		i++;
+	}
+
+	
+
 
 
 
