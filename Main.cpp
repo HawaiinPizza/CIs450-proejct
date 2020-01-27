@@ -3,7 +3,7 @@
 #include<algorithm>
 using namespace std;
 
-enum JobState{ARRIVAL, PREEMPTION, IO_REQUEST, IO_DONE, TERMINATION};
+enum JobState{ARRIVAL, PREEMPTION, IO_REQUEST, IO_DONE, TERMINATION, GOD};
 
 
 struct Event{
@@ -14,14 +14,12 @@ struct Event{
 
 	void operator--(int){
 		time--;
-		if(time<1){
+		if(time==0){
 			if(isCPU){
-				cout << "YES";
 				State=IO_REQUEST;
 			}
 			else
 			{
-				cout << "YES";
 				State=IO_DONE;
 			}
 		}
@@ -31,6 +29,7 @@ struct Event{
 		time=temp.time;
 		process_id=temp.process_id;
 		isCPU=temp.isCPU;
+		State=temp.State;
 	}
 
 	Event(int Arr,  int Process, bool CPU){
@@ -71,7 +70,7 @@ struct point{
 struct Process{
 	queue<Event> Jobs;
 	Process(int *Arr, int size, int Process){
-		for(int i=size-1; i>-1; i--){
+		for(int i=0; i<size; i++){
 
 			if(i%2==0)
 				Jobs.push(Event(Arr[i], Process, true));
@@ -89,6 +88,10 @@ struct Process{
 
 	bool empty(){
 		return Jobs.empty();
+	}
+
+	int size(){
+		return Jobs.size();
 	}
 
 };
@@ -110,8 +113,8 @@ int main(){
 	int P2[]={4};
 	int P3[]={8,2,10,2,7,5,6};
 	Process Pp1(P1, 5, 1);
-	Process Pp2(P2, 5, 2);
-	Process Pp3(P3, (4+3), 3);
+	Process Pp2(P2, 1, 2);
+	Process Pp3(P3, 7, 3);
 	queue<Process> All;
 	All.push(Pp1);
 	All.push(Pp2);
@@ -122,7 +125,8 @@ int main(){
 	Event CurrJob(-1,-1,false);
 	
 	//while(!ReadyQueue.empty() && !All.empty())
-	while(i<50){
+	int Pos=0;
+	while(i<100){
 		cout << i << '\t';
 		if(Pointer.WhenNext()==i){
 			ReadyQueue.push(All.front());
@@ -130,95 +134,73 @@ int main(){
 			All.pop();
 			Pointer.NextNow();
 		}
+		
+		if(CurrJob.process_id!=-1){
+				printf(" Runtime:%d,   id%d,   cpu%d   state%d, size%d\t",  CurrJob.time, CurrJob.process_id, CurrJob.isCPU, CurrJob.State, ReadyQueue.front().Jobs.size());
 
-		if(!ReadyQueue.empty() && !ReadyQueue.front().empty() )
-		{
-			printf("Runtime of %d, of process id %d\t", CurrJob.time, CurrJob.process_id);
-			CurrJob--;
-			if(CurrJob.State==IO_REQUEST ||  CurrJob.State==IO_DONE){
+				CurrJob--;
+				switch(CurrJob.State){
+					case ARRIVAL:
+						cout << "ARRIVE\t";
+						break;
+					case PREEMPTION:
+						cout << "PREEMPTION\t";
+						break;
+					case IO_REQUEST:
+						cout << "IO_REQUEST\t";
+						if(!ReadyQueue.front().empty() ){
+							CurrJob=ReadyQueue.front().pop();
+							break;
+						}
+						else{
+							cout << "YEAAA!";
+							CurrJob.State=TERMINATION;
+							break;
+						}
+					case IO_DONE:
+						cout << "IO_DONE\t";
+						if(!ReadyQueue.front().empty()){
+							CurrJob=ReadyQueue.front().pop();
+							break;
+						}
+						else{
+							cout << "WHY GOD!\t";
+							CurrJob.State=TERMINATION;
+							break;
+						}
+					case TERMINATION :
+						cout << "TERMINATION\t";
+						if( ReadyQueue.size()==1)
+							cout << "FINISH YES\t";
+						else{
+							cout << ReadyQueue.size() << " Before size\t";
+							ReadyQueue.pop();
+							cout << ReadyQueue.size() << " After size\t";
+							CurrJob=ReadyQueue.front().pop();
+						}
+
+						break;
+					case GOD:
+						cout << "FLORAIA";
+						break;
+				}
+		}
+		else if (CurrJob.process_id==-1){
+			if(!ReadyQueue.empty() && !ReadyQueue.front().empty() ){
 				CurrJob=ReadyQueue.front().pop();
+				cout << "Queue job: " << ReadyQueue.size() << '\t';
 			}
+			else
+				printf("Queue is empty %d:\t%d", i, ReadyQueue.size());
+				
 		}
-		else if(!ReadyQueue.empty() && ReadyQueue.front().empty()) {
-			printf("Queue is empty %d:\t%d", i, ReadyQueue.size());
-		}
-		else{
-			cout << "New job coming in\t";
-			//CurrJob=ReadyQueue.front().pop();
-		}
+
+		/*
+		*/
 
 
 		cout << endl;
 
 		i++;
 	}
-
-	
-
-
-
-
-	// Important variables
-	// ProcessSize: Number of processess
-	// Arrival array: The time in which an array will arrive
-	// Pos: a pointer to the array, to show the NEXT process it will be running
-	// io_idle/cpu_idle: see if the cpu is not idle
-	// Order is the next procses to arrive
-	//Event *ev = select and remove the earliest event from the event list;
-
-
-
-//	   int pid = ev->process_id;
-//	   while (sim_time < ev->time)
-//	      {sim_time = sim_time + 1; /* advance the simulation time */
-//		/* output “no event” to log */
-//	   else
-//	     {  
-//	      switch (ev->type)
-//		{
-//		   case ARRIVAL:
-//		       /* create a new (simulated) process and place it in the Ready Queue */
-//		      ...
-//		       /* output “arrival event” to log */ 
-//		      break;
-//		  case PREEMPTION:
-//		      /* put the current process in the Ready Queue */
-//		      cpu_idle = TRUE;
-//		      ...
-//		  /* output “preemtion event” to log */
-//		      break;
-//		  case IO_REQUEST:
-//		       /* free CPU and move the current process into the I/O Queue */
-//		      cpu_idle = TRUE;
-//		      ...
-//		  /* output “I/O request event” to log */ 
-//		      break;
-//		  case IO_DONE:
-//		      /* free I/O device and put the process in the Ready Queue */
-//		      io_idle = TRUE;
-//		      ...
-//		  /* output “IO done event” to log */
-//		      break;
-//		  case TERMINATION:
-//		      /* free up the CPU, update statistics of the entire simulation */
-//		      cpu_idle = TRUE;
-//		      ...
-//		  /* output “termination event” to log */
-//		      break;
-//	       }
-//	       if (cpu_idle and there are jobs to dispatch) 
-//		{
-//		   cpu_idle = FALSE;
-//		   dispatch_a_process();  /* remove the first process from the Ready Queue */
-//		/* output “job dispatch event” to log */	
-//		 }
-//	       if (io_idle and there are jobs waiting to perform I/O)
-//	     {
-//		io_idle = FALSE;
-//		do_IO_operation (...); /* remove the first process from the I/O Queue */
-//		/* output “I/O operation event” to log */ 	
-//	     } 
-//	  } /* end switch */
-//	}   /* end if         */
-
 }
