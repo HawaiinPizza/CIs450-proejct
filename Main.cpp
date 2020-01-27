@@ -184,6 +184,7 @@ int main(){
 						}
 						//Modify as to push teh next io job to CPU queue. Than, let another process run
 						//So if P1 is in I/O, than have P1 be in CPU, P2 in IO, and P1 is pushed to queue.
+					//Removing tihs	
 					case IO_DONE:
 						cout << "IO_DONE\t";
 						if(!ReadyQueue.front().empty()){
