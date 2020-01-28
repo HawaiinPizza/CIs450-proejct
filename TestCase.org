@@ -1,0 +1,221 @@
+* Requirements
+  *What the program does*
+** Assumpations
+   *Things you should always expect the program to have* :: This is the input/input form your program is reciving
+   - Given an input file, in the form of $t_a N c_1 d_1 d_2 ... c_{N-1} d_{N-1} c_N$, with each number being an interger. *FORMAT ISN't GUARNATNEND*
+   -  User enters in as arguemtns the input file name*, *ouptut file name*, *time quantom* and *output log file name*
+** Decompsition
+*** Input
+  - I1 :: Each process in the file is in the form of $t_a N c_1 d_1 d_2 ... c_{N-1} d_{N-1} c_N$ 
+    A CPU burst is what starts/ends a process. 
+    - $t_a$ Arrival Time of process
+    - $N$ Number of CPU burst
+    - $c_i$ and $d_i$ is the CPU burst duration
+  - I2 :: User enters in as arguemtns the *input file name*, *ouptut file name*,  *output log file name* and  *time quantom*
+*** Process
+  - P1 :: When new jobs come in, enqueue them to IO/CPU
+  - P2 :: An internal clock will be running, simulating each second of the program.
+  - P3 :: When a process is interrputed, because of the cpu burst being longer than the quantom, the job is premeted and returns to ready queue
+  - P4 :: When the CPU/IO complete a job, it will set the program that process that was running as blocked, allowing for another job to come in.
+  - P5 :: If a job is done and has no more done, remove process from ready queue
+  - P6 :: Keep tracks of the statiics, as such
+    + Process level
+      - Turn around time :: total time the job was running
+      - Wait time ::  time spent in the ready queue
+      - IO/wait ::  Time waiting for the IO process
+    + Simulation Level
+      - CPU ultiazation :: percentage of hte itme the cpu was used
+      - Average Turn around time :: total time the job was running
+      - Average Wait time ::  time spent in the ready queue
+      - Average IO/wait ::  Time waiting for the IO process
+      
+*** Output
+ - O1 :: When aj ob is termianted, print hte message : *Job %d termianted: Turn Around Time = %d, wait time %d, IO wait time %d* where
+   + Turn around time  :: Total time the job was running for
+   + Wait time ::  The  total tiem a job spent in the ready queue
+   + I/O wait :: total time the job had to wait for the io device
+ - O2 :: At the end of the simualtion, print out
+   + Percentage of the time CPU was used
+   + Average Turn ARound Time
+   + average wait time
+   + average I/O wait time
+ - O3 :: *CHECK WITH STENER OR SOMEONE ELSE*  When an event changes from any of hte listed 5 states, print the message of it. in the form of
+   * Time  :: Event
+   * The 5 states a program can have are
+     + NEW :: A new job has arrived
+     + Ready :: Put that job in ready queue
+     + Running :: That job is currently running
+     + BLCOKEd :: When a job finishes and request IO/CPU /or/ the job gets premeted
+     + Exit :: Remove job from queue for 
+ - O4 :: Print the status of the simulation onto log
+ - O5 :: Print the contents of ready queue and IO queue
+* Test Plan
+  *Things to test out for the program*
+  - [ ] File testing :: Testing if the file can be read/print. _*This will have more later*_
+    + Input :: All teh shit about files *Add more later*
+    + Expected Ouptut ::
+    + Acutal Output ::
+  - [ ] Test if file is in right format :: The format of the file has to follow the $t_a N c_1 d_1 d_2 ... c_{N-1} d_{N-1} c_N$ 
+    + Input :: A file, with stuff
+    + Expected Ouptut :: $t_a N c_1 d_1 d_2 ... c_{N-1} d_{N-1} c_N$ 
+    + Acutal Output ::
+  - [ ] Time quantom is greater htan 0 :: Data testing
+    + Input :: Time quantom
+    + Expected Ouptut :: It's greater than 0
+    + Acutal Output ::
+  - [ ] Process are put in the correct queue :: Process testing
+    + Input :: An IO_Request gets current process queued to IO, and vice versa for IO_Done
+    + Acutal Output ::
+  - [ ] Job changes state correctly :: Process testing
+    + Expected Ouptut :: The job changes state correctly in output
+    + Acutal Output ::
+  - [ ]  Push next process :: Once a job, queues in the next process
+    + Expected Ouptut :: queues the job corereclty
+    + Acutal Output ::
+  - [ ] Terminate job message :: Should show a message 
+    + Input ::  Message that dispalys when a job is termainted, and the states of it. 
+    + Expected Ouptut ::  /Job %d termianted: Turn Around Time = %d, wait time %d, IO wait time %d/ 
+    + Acutal Output ::
+  - [ ] End of simulation statics :: Once hte simuation ends print out
+    + Expected Ouptut :: Aerage time CPU was used, average turn around time, average wait time and average I/O time.
+    + Acutal Output ::
+  - [ ] State change print :: When teh state changes, prints a message
+    + EO :: Prints out a message saying state change.
+  
+* Alogirthm
+  *The code for the program*:: This is teh how of the program, and should be codeable
+#+BEGIN_src plantuml :file Alg1.png
+  start
+	  note left: Current job is the process the CPU is currently running;
+	  note left: The sturucture of the program is made as such: it'll check if a new job comes in. Than, it'll run the IO processor, than the CPU processor.;
+	  note left: This is so if any CPU job is premeted and an IO job is odne, it'll go thorugh the order of new job->blocked->premted.;
+	  note left: PopBack is a function for queues, that means you pop out the front of the queue, and enqueue it
+	  if(Input file is not in correct format ) then (Yes)
+		:Print "Error error wrong format"
+		Throw expection of program(I1);
+	  else
+		if(User enters argumetns of an existing file name as input, 2 valid names for output files and a postive time qunatom) then (no)
+		:Print "Error error wrong format"
+		Throw expection of program(I2);
+			
+
+		endif
+	  endif
+	  while(Readyqueue AND not arrived jobs) is (not empty)
+		:print "$Time:\t";
+		  :Increment Time (P2);
+		  if(Job arrived) then (yes)
+			  :Enqueue jobs onto Readyqueue (P1);
+			  :Print "Job from process %d has arrived" (O3) ;
+		  endif
+		  if(IO_idle) then (true)
+			  if(IO_queue empty) then (false)
+				  :CurrentIOJob=IO_queue.PopBack()
+				  IO_idle is false (P1);
+				  :Print "IO is now runing %d."(O3);
+			  else (true)
+				  :Print "IO is currently idle" (O4);
+			  endif
+		  else(false)
+			:CurrentIOJob decrement;
+			    :Increment CurrentJob's process IO/wait time (P6);
+			if(CurrentIOJob.time) then (less than or equal to 0)
+				:Enqueue CurrentIOjob's next job to Readyqueue
+				IO_idle=true (P4);
+				:Print "IOJob from %d is blocked."(O3) ;
+			    endif
+			endif
+		      if(CPU) then (not running)
+			  if(Readyqueue is empty ) then (false)
+				  :CurrentJob=ReadyQueue.PopBack()
+				  CPU_idle is fals (P1);
+				  :print "CPU is is now running job %d" (O3);
+			  else(true)
+				  :Print "CPU is idle" (O4) ;
+
+
+			  endif
+		      else(Running)
+			    : Increment time CPU being used	(P6) ;
+			      :CurrentJob.timer decrement (P2);
+			      :Print "Job from process %d is running"(O4);
+			      :Increment CurrentJob's process Tunraround time (P6);
+			      if(time running current job>=time qunatom) then (yes)
+				  :Change CurrentJob state to premeted
+				  Enqueue CurrentJob to ReadyQueue
+				  Remove CurrentJob from CPU 
+				  CPU_idle=true (P3);
+				  :Print "Job from %d is premeted, wiht %d tiem remainging"(O3);
+			      else (no)
+				  if (is the CurrentJob.timer<=0) then (yes)
+					if(CurrentJob isn't last process) then (no)
+					  :Change CurrentJob to blocked
+					  EnQueue CurrentJob's next job  to IOqueue
+					  CPU_idle=true (P4);
+					  :Print "Job from %d is blocked."(O3) ;
+					 else(no)
+						:Remove CurrentJob\'s proecss from Readyqueue (P5);
+						:Print "Job %d termianted: Turn Around Time = %d, wait time %d, IO wait time %d"(O1);
+					 endif
+				  endif
+
+			      endif
+		  endif
+		  :Increment all process expect those who are currently in IO/CPU processor Ready queue time (P6);
+		  if(Readyqueue is not empty and $Time%5==0?) then (yes)
+			  :Print "Jobs left in Readyqueue are %[d]" (O5) ;
+		  endif
+		  if(IO is not empty and $Time%5==0?) then (yes)
+			  :Print "Jobs left in IO are %[d]" (O5) ;
+		  endif
+	  endwhile(empty)
+	  : Get the average turn around time, wait tiem and IO/wait time of all process (P6);
+	  :Print "Percentage of cpu usage, average turn around time, average wait time, average I/O wait time" (O2);
+  stop
+#+END_src
+
+#+RESULTS:
+[[file:Alg1.png]]
+
+
+* Garbage
+
+** Specifications
+  *Things what the program will do* :: This skims out on details of program excutation
+  1 (Process) :: Hold two queues/processors, with their names
+    * CPU/Readyqueue :: Simulates/queues the cpu jobs
+    * IO/IOQeuue ::  Simulates/queues the IO jobs
+  - (Input) :: Each process in the file is in the form of $t_a N c_1 d_1 d_2 ... c_{N-1} d_{N-1} c_N$ 
+    A CPU burst is what starts/ends a process. 
+    - $t_a$ Arrival Time of process
+    - $N$ Number of CPU burst
+    - $c_i$ and $d_i$ is the CPU burst duration
+  - (Process) :: An internal clock will be running, simulating each second of the program.
+  - (Input) :: User enters in as arguemtns the *input file name*, *ouptut file name*,  *output log file name* and  *time quantom*
+  - (Output) :: Every time unit print out the events that happen to output log, adn every 5 time units print hte contents of ready queue and I/O queue (before events take place)
+  - (Output) CHECK WITH STENER OR SOMEONE ELSE :: When an event changes from any of hte listed 5 states, print the message of it. in the form of
+    * Time  :: Event
+    * The 5 states a program can have are
+      + NEW :: A new job has arrived
+      + Ready :: Put that job in ready queue
+      + Running :: That job is currently running
+      + BLCOKEd :: When a job finishes and request IO/CPU /or/ the job gets premeted
+      + Exit :: Remove job from queue for life
+  - (Process) :: When a process is interrputed, because of the pu burst being longer than the quantom, the job is premeted and returns to ready queue
+  - (Process) :: When the CPU/IO complete a job, it will set the program that process that was running as blocked, allowing for another job to come in.
+  - (Process) :: Once the blocked's job IO process runs, it will push the process into the ready queue again, and vice versa for CPU.
+  - (Process) ::  If a process etners the ready queue, teh order is
+    + A new process
+    + A process from blocked state
+    + process prememted
+  - (Output) :: When aj ob is termianted, print hte message : *Job %d termianted: Turn Around Time = %d, wait time %d, IO wait time %d* where
+    + Turn around time  :: Total time the job was running for
+    + Wait time ::  The  total tiem a job spent in the ready queue
+    + I/O wait :: total time the job had to wait for the io device
+  - (Output) :: At the end of the simualtion, print out
+    + Percentage of the time CPU was used
+    + Average Turn ARound Time
+    + average wait time
+    + average I/O wait time
+       
+      
