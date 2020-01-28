@@ -20,7 +20,7 @@ struct Event{
   int timeleft=0;
   int timerunning=0;
   Process* parProcess;
-  
+  int process_id;
   
 
   Event(){
