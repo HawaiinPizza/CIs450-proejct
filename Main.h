@@ -153,22 +153,26 @@ struct Processor{
   bool setJob(bool isCPU=true){
     if(isCPU){
       if(!CPUQueue.front().empty()){
+	printf("Size of the process is %d", CPUQueue.front().size());
 	CPU=CPUQueue.front().pop();
-	if(CPU.isCPU == false)
+	printf(":%d\t", CPUQueue.front().size());
+	if(CPU.isCPU == false){
 	  printf("This is fuckign weird. CPU is an IO");
+	  return false;
+	}
 	return true;
       }
       else
-	printf("TTHE SIZE IS EMPTY");
-      CPUQueue.pop();
 	return false;
       }
 
     else{
       if(!IOQueue.front().empty()){
 	IO=IOQueue.front().pop();
-	if(IO.isCPU == true)
+	if(IO.isCPU == true){
 	  printf("This is fuckign weird. CPU is an IO");
+	  return false;
+	}
 	return true;
       }
       else
@@ -197,10 +201,18 @@ struct Processor{
   }
   
   void Premeted(){
-    printf("%d SIZe id %d ", CPUQueue.size(), CPUQueue.front().id);
-	CPUQueue.push(CPUQueue.front());
-	CPUQueue.pop();
-    printf("%d SIZe id %d ", CPUQueue.size(), CPUQueue.front().id);
+    Process temp;
+    temp.push(CPU);
+    while(!CPUQueue.front().empty()){
+      temp.push(CPUQueue.front().front());
+      CPUQueue.front().pop();
+    }
+    CPUQueue.front()=temp;
+    //printf("Size of the process is %d", CPUQueue.front().size());
+    //CPUQueue.front().push(CPU);
+    //CPUQueue.push(CPUQueue.front());
+    //CPUQueue.pop();
+    //printf(":%d\t", CPUQueue.front().size());
   }
 
   //Queue operators

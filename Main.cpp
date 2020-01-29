@@ -11,6 +11,7 @@
 int main(){
   Processor War;
   int s1=3;
+  //int atemp1[5]={3,4,5,6,7};
   int atemp1[5]={2,5,8,7,4};
   int atemp2[1]={4};
   int atemp3[7]={8,2,10,2,7,5,6};
@@ -25,7 +26,7 @@ int main(){
   int Quant=3;
 
   
-  int i=0;
+  int i=1;
   bool io_idle=true;
   bool cpu_idle=true;
 
@@ -83,6 +84,7 @@ int main(){
 	}
 	else{
 	  printf("Unable to add job to CPU");
+	  
 	}
       }
     }
