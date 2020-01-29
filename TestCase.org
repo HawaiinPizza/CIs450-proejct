@@ -121,8 +121,9 @@
 			    :Increment CurrentJob's process IO/wait time (P6);
 			if(CurrentIOJob.time) then (less than or equal to 0)
 				:Enqueue CurrentIOjob's next job to Readyqueue
+				CurrentIOJob's state is IO_DONE
 				IO_idle=true (P4);
-				:Print "IOJob from %d is blocked."(O3) ;
+				:Print "IOJob from %d is IO_DONE."(O3) ;
 			    endif
 			endif
 		      if(CPU) then (not running)
