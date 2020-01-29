@@ -90,13 +90,13 @@
 	  note left: The sturucture of the program is made as such: it'll check if a new job comes in. Than, it'll run the IO processor, than the CPU processor.;
 	  note left: This is so if any CPU job is premeted and an IO job is odne, it'll go thorugh the order of new job->blocked->premted.;
 	  note left: PopBack is a function for queues, that means you pop out the front of the queue, and enqueue it
-	  if(Input file is not in correct format ) then (Yes)
-		:Print "Error error wrong format"
-		Throw expection of program(I1);
-	  else
-		if(User enters argumetns of an existing file name as input, 2 valid names for output files and a postive time qunatom) then (no)
+	    if(User enters argumetns of an existing file name as input, 2 valid names for output files and a postive time qunatom) then (no)
 		:Print "Error error wrong format"
 		Throw expection of program(I2);
+	  else
+		if(Input file is not in correct format ) then (Yes)
+		:Print "Error error wrong format"
+		Throw expection of program(I1);
 			
 
 		endif
@@ -154,7 +154,7 @@
 					  EnQueue CurrentJob's next job  to IOqueue
 					  CPU_idle=true (P4);
 					  :Print "Job from %d is blocked."(O3) ;
-					 else(no)
+					 else(yes)
 						:Remove CurrentJob\'s proecss from Readyqueue (P5);
 						:Print "Job %d termianted: Turn Around Time = %d, wait time %d, IO wait time %d"(O1);
 					 endif
@@ -165,6 +165,9 @@
 		  :Increment all process expect those who are currently in IO/CPU processor Ready queue time (P6);
 		  if(Readyqueue is not empty and $Time%5==0?) then (yes)
 			  :Print "Jobs left in Readyqueue are %[d]" (O5) ;
+		  else
+			:Print "Readyqeuue is empty" (O5) ;
+			  
 		  endif
 		  if(IO is not empty and $Time%5==0?) then (yes)
 			  :Print "Jobs left in IO are %[d]" (O5) ;
@@ -175,8 +178,24 @@
   stop
 #+END_src
 
+#+BEGIN_src plantuml :file Alg2.png
+class Event{
+	int id : (The event's process id)
+	State State :  (The state the event is in)
+	natural int Timeleft :  (Time left for the CPU burst)
+	bool isCPU :  (if it's a cpu or io event)
+	--
+	void decremnt() :  (Decrement Timeleft
+	If Timeleft is less than or equal to 0, change State ot eitehr Io_Request or IO_Done)
+
+
+}
+#+END_src
+
+
+
 #+RESULTS:
-[[file:Alg1.png]]
+[[file:Alg2.png]]
 
 
 * Garbage

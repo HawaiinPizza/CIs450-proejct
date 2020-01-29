@@ -8,6 +8,7 @@ struct Process;
 
 //This is the state a job can be in.
 enum JobState{ARRIVAL,  PREEMPTION, IO_REQUEST, IO_DONE, TERMINATION };
+enum EventTerm{valid, cpu, io};
 
 //THIS holds events that will be used to simulate events
 struct Event{
@@ -18,6 +19,8 @@ struct Event{
   bool isCPUjob=true;
   
 
+  //This is the null event. An event that has nothing in it.
+  //This is used for testing:: Dont alter value unless willing to hceck for that.
   Event(){
     id=-1;
   }
@@ -26,6 +29,21 @@ struct Event{
     timeleft=timeToExecute;
     id=process_id ;
     isCPUjob=CPU;
+  }
+
+  void operator--(int){
+    timeleft--;
+    timerunning++;
+    if(timeleft<=0){
+      if(isCPUjob){
+	State=IO_REQUEST;
+      }
+      else{
+	State=IO_DONE;
+      }
+      
+    }
+      
   }
   
 };
@@ -39,7 +57,13 @@ struct Process{
   int IOWait=0;
 
 
+  void operator++(int){
+	  waitTime++;
+	  runTime++;
+	  IOWait++;
+  }
 
+  //Null process. This process is empty.
   Process(){
     id=-1;
   }
@@ -66,11 +90,9 @@ struct Process{
   Event pop(){
     if(empty()){
       //Return null event
-      cout << "YES";
       return Event();
     }
     else{
-      cout << "NO";
       Event temp=jobs.front();
       jobs.pop();
       return temp;
@@ -96,42 +118,94 @@ struct Processor{
   Event CPU;
   Event IO;
 
+  //Running process operators
+  void operator--(int){
+    CPU--;
+    CPUUsage++;
+  }
+
+  //Running process operators
+  void operator--(){
+    IO--;
+    IOQueue.front()++;
+  }
+
+  //If any of the jobs currenlty in the cpu have a process id of -1, that means they're done.
+  //enum EventTerm{valid, ECPU, EIO};
+  EventTerm validJobs(){
+    if(CPU.State == IO_REQUEST && IO.State == IO_DONE)
+      {
+      if(CPU.State == IO_REQUEST)
+	return cpu;
+      else
+	return io;
+      }
+	  
+    return valid;
+  }
+
+  //Queue operators
   void push(Process temp, bool isCPU=true){
     if(isCPU)
 	return CPUQueue.push(temp);
     return IOQueue.push(temp);
   }
 
-  int size(bool isCPU){
+  int size(bool isCPU=true){
     if(isCPU)
 	return CPUQueue.size();
     return IOQueue.size();
      
   }
 
-  bool empty(bool isCPU){
+  bool empty(bool isCPU=true){
     if(isCPU)
 	return CPUQueue.empty();
     return IOQueue.empty();
   }
 
-  Event PopBack(bool isCPU){
+  bool AllEmpty(){
+    if (CPUQueue.empty() && IOQueue.empty() )
+      return true;
+    return false;
+  }
+
+  Process front(bool isCPU=true){
+    if(isCPU)
+      return CPUQueue.front();
+    return IOQueue.front();
+  }
+
+
+  void PopBack(bool isCPU=true){
+    Process tempProcess=CPUQueue.front();
     if(isCPU){
-	Process temp=CPUQueue.front();
-	Event JobReturn=temp.pop();
-	if(JobReturn.id == -1)
-	  printf("This job has termianted, of id of %d.", temp.id);
-	CPUQueue.push(temp);
-	CPUQueue.pop();
+	Process tempProcess=CPUQueue.front();
+	Event JobReturn=tempProcess.pop();
+	if(JobReturn.id == -1){
+	  printf("This job has termianted, of id of %d.", tempProcess.id);
+	}
+	else{
+	  IOQueue.push(tempProcess);
+	  CPUQueue.pop();
+	}
     }
-    Process temp=IOQueue.front();
-    IOQueue.push(temp);
-    IOQueue.pop();
-    return temp.pop();
+    else{
+	Process JobReturn=IOQueue.front();
+	CPUQueue.push(JobReturn);
+	IOQueue.pop();
+    }
+  }
+
+  void getJob(bool isCPU=true){
+  }
+
+  void Premeted(){
+
   }
 
   Processor(){
-
+    id=-1;
   }
   
 };
