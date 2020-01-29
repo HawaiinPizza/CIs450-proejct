@@ -14,6 +14,7 @@ enum EventTerm{valid, cpu, io};
 struct Event{
   JobState State=ARRIVAL;
   int timeleft=0;
+  int timerun=0;
   int id;
   bool isCPU=true;
   
@@ -31,7 +32,10 @@ struct Event{
   }
 
   void operator--(int){
-    timeleft--;
+    if(timeleft>0 && timerun>=0){
+	timeleft--;
+	timerun++;
+    }
     if(timeleft<=0){
       if(isCPU){
 	State=IO_REQUEST;
@@ -174,12 +178,13 @@ struct Processor{
   void PopBack(bool isCPU=true){
     if(isCPU){
 	Process tempProcess=CPUQueue.front();
-	Event JobReturn=tempProcess.pop();
-	if(JobReturn.id == -1){
+	if(tempProcess.empty()){
 	  printf("This job has termianted, of id of %d.", tempProcess.id);
 	}
 	else{
 	Process tempProcess=CPUQueue.front();
+	printf("New CPU job of %d\t", tempProcess.id );
+	if(tempProcess.id!=CPU.id)
 	  IOQueue.push(tempProcess);
 	  CPUQueue.pop();
 	}
@@ -187,22 +192,41 @@ struct Processor{
     else{
 	Process tempProcess=IOQueue.front();
 	CPUQueue.push(tempProcess);
+	printf("New IO job of %d\t", tempProcess.id );
 	IOQueue.pop();
     }
   }
 
-  void setJob(bool isCPU){
+  void setJob(bool isCPU=true){
     if(isCPU)
       {
-      CPU=CPUQueue.front().pop();
-      if(CPU.id==-1)
-	printf("This job has been TERMINATED");
+	CPU=CPUQueue.front().pop();
+	//while(CPU.id==-1 && !CPUQueue.front().empty() ){
+	//CPU=CPUQueue.front().pop();
+	    //}
+//	if(CPUQueue.front().empty()){
+//	  printf("DELETE  QUEUE");
+//	  CPUQueue.pop();
+//	}
+	
       }
+
     else{
-      IO=IOQueue.front().pop();
-      if(IO.id==-1)
-	printf("This job has been TERMINATED");
-      }
+	IO=IOQueue.front().pop();
+	/*
+	while(IO.id==-1 && !IOQueue.front().empty() ){
+	    IO=IOQueue.front().pop();
+	}
+	if(IOQueue.front().empty()){
+	  printf("DELTE IO");
+	  IOQueue.pop();
+	}
+	*/
+  }
+}
+
+
+  void ChangeJob(bool isCPU=true){
   }
 
 
