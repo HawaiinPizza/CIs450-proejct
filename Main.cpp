@@ -12,11 +12,11 @@ int main(){
   Processor War;
   int s1=3;
   int atemp1[5]={2,5,8,7,4};
-  int atemp2[7]={8,2,10,2,7,5,6};
-  int atemp3[1]={4};
+  int atemp2[1]={4};
+  int atemp3[7]={8,2,10,2,7,5,6};
   Process ptemp1(atemp1, 5, 1, 3);
-  Process ptemp3(atemp2, 7, 2, 6);
-  Process ptemp2(atemp3, 1, 3, 5);
+  Process ptemp2(atemp2, 1, 2, 5);
+  Process ptemp3(atemp3, 7, 3, 7);
   Processor CPU;
   queue<Process> PPtemp;
   PPtemp.push(ptemp1);
@@ -24,6 +24,7 @@ int main(){
   PPtemp.push(ptemp3);
   int Quant=3;
 
+  
   int i=0;
   bool io_idle=true;
   bool cpu_idle=true;
@@ -36,63 +37,65 @@ int main(){
       printf("Job %i has arrived\t", PPtemp.front().id);
       PPtemp.pop();
     }
-
-
-    
     /* IO Idle*/
     if(io_idle){
-
+      //If theres job taht can be sent to IO
       if(CPU.empty(false)){
-	printf("IO is  idle\t");
+	printf("IO QueProcessor idle");
       }
       else{
-	CPU.setJob(false);
-	printf("New IO job of %d\t", CPU.IO.id);
-	io_idle=false;
+	if ( CPU.setJob(false)){
+	  printf("New IO process%d", CPU.IO.id);
+	  io_idle=false;
+	}
+	else if (CPU.IO.State=IO_REQUEST){
+	  printf("\t%d\t%d", CPU.CPUQueue.size(), CPU.IOQueue.size());
+	}
       }
-      
     }
     else{
-      --CPU;
-      printf("IO Time %d ID %d\t", CPU.IO.timeleft, CPU.IO.id);
-      if(CPU.IO.State==IO_DONE){
-	io_idle=true;
-	CPU.PopBack(false);
-	printf("IO Done\t");
-      }
+	CPU.IO--;
+      printf("IO job %d: time %d", CPU.IO.id, CPU.IO.timeleft);
+	if(CPU.IO.State==IO_DONE){
+	  printf("Current IO job done\t");
+	  io_idle=true;
+	  CPU.Back(false);
+	}
     }
+    printf("\t\t");
 
-    printf(":\t\t");
-    /*CPU Idle*/
+    
+    /*CPU Idle #FF0000*/
     if(cpu_idle){
+      //If theres job taht can be sent to IO
       if(CPU.empty()){
-	printf("CPU is idle\t");
-
+	printf("CPU QueProcessor idle");
       }
       else{
-	CPU.setJob();
-	printf("New CPU job of %d\t", CPU.CPU.id);
-	cpu_idle=false;
-
+	if(CPU.setJob()){
+	    printf("New CPU process %d", CPU.CPU.id);
+	    cpu_idle=false;
+	}
       }
     }
     else{
-      CPU--;
-      printf("CPU Time %d ID %d\t", CPU.CPU.timeleft, CPU.CPU.id);
-      if(CPU.CPU.State==IO_REQUEST || CPU.CPU.timeleft == 0){
-	cpu_idle=true;
-	CPU.PopBack();
-	printf("CPU Done\t");
-      }
-      else if (CPU.CPU.timerun>=Quant){
-	cpu_idle=true;
-	CPU.Premeted();
-	printf("CPU IS PREMETD\t");
-      }
+	CPU.CPU--;
+      printf("CPU job %d: time %d", CPU.CPU.id, CPU.CPU.timeleft);
+	if(CPU.CPU.State==IO_REQUEST){
+	  printf("Current CPU job done");
+	  cpu_idle=true;
+	  CPU.Back();
+	}
+	else if(CPU.CPU.timerun>=Quant){
+	  printf("CPU is premeted");
+	  cpu_idle=true;
+	  CPU.Premeted();
+	}
+	else if (CPU.CPU.State=IO_DONE){
+	  printf("\tWTF man%d\t%d", CPU.CPUQueue.size(), CPU.IOQueue.size());
+	}
     }
-
-
-    printf(":\t");
+    printf("\t\t");
     // Print contents of readyqueue
     //CPU.print();
     
