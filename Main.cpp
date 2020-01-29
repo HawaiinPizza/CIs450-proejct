@@ -41,7 +41,6 @@ int main(){
     }
     else{
       --CPU;
-      CPU.IOQueue.front()++;
 
       if(CPU.IO.id==IO_DONE){
 	printf("IO of process id has been IO_Done.\t", CPU.IO.id);

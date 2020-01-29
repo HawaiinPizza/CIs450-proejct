@@ -14,9 +14,8 @@ enum EventTerm{valid, cpu, io};
 struct Event{
   JobState State=ARRIVAL;
   int timeleft=0;
-  int timerunning=0;
   int id;
-  bool isCPUjob=true;
+  bool isCPU=true;
   
 
   //This is the null event. An event that has nothing in it.
@@ -28,14 +27,13 @@ struct Event{
   Event(int timeToExecute, int process_id, bool CPU){
     timeleft=timeToExecute;
     id=process_id ;
-    isCPUjob=CPU;
+    isCPU=CPU;
   }
 
   void operator--(int){
     timeleft--;
-    timerunning++;
     if(timeleft<=0){
-      if(isCPUjob){
+      if(isCPU){
 	State=IO_REQUEST;
       }
       else{
@@ -54,14 +52,20 @@ struct Process{
   queue<Event> jobs;
   int waitTime=0;
   int runTime=0;
-  int IOWait=0;
+  int IOTime=0;
 
-
-  void operator++(int){
-	  waitTime++;
-	  runTime++;
-	  IOWait++;
+  void incWait(){
+    waitTime++;
   }
+
+  void incRun(){
+    runTime++;
+  }
+
+  void incIO(){
+    IOTime++;
+  }
+
 
   //Null process. This process is empty.
   Process(){
@@ -99,6 +103,11 @@ struct Process{
     }
   }
 
+  void push(Event temp){
+    jobs.push(temp);
+  }
+    
+
 
 
 };
@@ -127,21 +136,6 @@ struct Processor{
   //Running process operators
   void operator--(){
     IO--;
-    IOQueue.front()++;
-  }
-
-  //If any of the jobs currenlty in the cpu have a process id of -1, that means they're done.
-  //enum EventTerm{valid, ECPU, EIO};
-  EventTerm validJobs(){
-    if(CPU.State == IO_REQUEST && IO.State == IO_DONE)
-      {
-      if(CPU.State == IO_REQUEST)
-	return cpu;
-      else
-	return io;
-      }
-	  
-    return valid;
   }
 
   //Queue operators
@@ -178,7 +172,6 @@ struct Processor{
 
 
   void PopBack(bool isCPU=true){
-    Process tempProcess=CPUQueue.front();
     if(isCPU){
 	Process tempProcess=CPUQueue.front();
 	Event JobReturn=tempProcess.pop();
@@ -186,19 +179,33 @@ struct Processor{
 	  printf("This job has termianted, of id of %d.", tempProcess.id);
 	}
 	else{
+	Process tempProcess=CPUQueue.front();
 	  IOQueue.push(tempProcess);
 	  CPUQueue.pop();
 	}
     }
     else{
-	Process JobReturn=IOQueue.front();
-	CPUQueue.push(JobReturn);
+	Process tempProcess=IOQueue.front();
+	CPUQueue.push(tempProcess);
 	IOQueue.pop();
     }
   }
 
-  void getJob(bool isCPU=true){
+  void setJob(bool isCPU){
+    if(isCPU)
+      {
+      CPU=CPUQueue.front().pop();
+      if(CPU.id==-1)
+	printf("This job has been TERMINATED");
+      }
+    else{
+      IO=IOQueue.front().pop();
+      if(IO.id==-1)
+	printf("This job has been TERMINATED");
+      }
   }
+
+
 
   void Premeted(){
 

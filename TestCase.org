@@ -185,9 +185,31 @@ class Event{
 	natural int Timeleft :  (Time left for the CPU burst)
 	bool isCPU :  (if it's a cpu or io event)
 	--
-	void decremnt() :  (Decrement Timeleft
-	If Timeleft is less than or equal to 0, change State ot eitehr Io_Request or IO_Done)
+	void operator--() :  (Decrement Timeleft
+		\tIf Timeleft is less than or equal to 0, change State ot eitehr IO_REQUEST or IO_DONE)
+	}
+class Process{
+	int id : The process's ID
+	Queue<Event> Jobs: The process to be run.
+	int waitTime, runTime and IOWaitTime
+	Event pop() : return the first element in the queue, and pop it out. (
+		\t If jobs is empty, return a job with TERMINATION event )
+	void incRun() : Increment time beign alive.
+	void incWait() : Increment time waiting for IO
+	void incRead() : Incremtne time waiting for Ready queue
 
+}
+
+class Processor{
+	Event CPU
+	Queue<Process> CQueue : Event/Queue of the CPU
+	Event IO
+	Queue<Process> IOQueue : Event/Queue of the IO
+	--
+	Event PopBack(bool IsCPU) : Get the front of either CQueue/IOQueue. Than, pop the event,
+		\t than eqneueu that process in the CQueue/IOQueue
+		\t however, if teh front of selected CQueue is empty, print that the process has termianted and remove from queue.
+	void operator--(bool IsCPU) : Decrmetn CPU/IO, incRun of the process.
 
 }
 #+END_src
