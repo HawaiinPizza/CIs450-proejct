@@ -22,7 +22,7 @@ struct Event{
   //This is the null event. An event that has nothing in it.
   //This is used for testing:: Dont alter value unless willing to hceck for that.
   Event(){
-    id=-1;
+    id=-1240;
   }
 
   Event(int timeToExecute, int process_id, bool CPU){
@@ -73,7 +73,7 @@ struct Process{
 
   //Null process. This process is empty.
   Process(){
-    id=-1;
+    id=-1240;
   }
 
   Process(int* Arr, int size, int ProcessorID){
@@ -86,6 +86,9 @@ struct Process{
     id=ProcessorID;
   }
 
+  Event front(){
+    return jobs.front();
+  }
 
   int size(){
     return jobs.size();
@@ -98,7 +101,9 @@ struct Process{
   Event pop(){
     if(empty()){
       //Return null event
-      return Event();
+      Event Wrong;
+      Wrong.id=-11;
+      return Wrong;
     }
     else{
       Event temp=jobs.front();
@@ -177,23 +182,22 @@ struct Processor{
 
   void PopBack(bool isCPU=true){
     if(isCPU){
-	Process tempProcess=CPUQueue.front();
-	if(tempProcess.empty()){
-	  printf("This job has termianted, of id of %d.", tempProcess.id);
-	}
-	else{
-	Process tempProcess=CPUQueue.front();
-	printf("New CPU job of %d\t", tempProcess.id );
-	if(tempProcess.id!=CPU.id)
-	  IOQueue.push(tempProcess);
-	  CPUQueue.pop();
-	}
+      // Is process empty?
+      if(CPUQueue.front().empty()){
+	printf("Terminating %d ", CPUQueue.front().id);
+	CPUQueue.pop();
+      }
+      //Push process back onto queue, as well as next IO opeartion
+      else{
+	IOQueue.push(CPUQueue.front());
+	printf("Putting job %d onto IO, which has size %d", CPUQueue.front().id, IOQueue.back().size());
+	CPUQueue.pop();
+      }
     }
     else{
-	Process tempProcess=IOQueue.front();
-	CPUQueue.push(tempProcess);
-	printf("New IO job of %d\t", tempProcess.id );
-	IOQueue.pop();
+      CPUQueue.push(IOQueue.front());
+	printf("Putting job %d onto CPU", CPUQueue.back().id);
+      IOQueue.pop();
     }
   }
 
@@ -201,7 +205,7 @@ struct Processor{
     if(isCPU)
       {
 	CPU=CPUQueue.front().pop();
-	//while(CPU.id==-1 && !CPUQueue.front().empty() ){
+	//while(CPU.id==-1240 && !CPUQueue.front().empty() ){
 	//CPU=CPUQueue.front().pop();
 	    //}
 //	if(CPUQueue.front().empty()){
@@ -214,7 +218,7 @@ struct Processor{
     else{
 	IO=IOQueue.front().pop();
 	/*
-	while(IO.id==-1 && !IOQueue.front().empty() ){
+	while(IO.id==-1240 && !IOQueue.front().empty() ){
 	    IO=IOQueue.front().pop();
 	}
 	if(IOQueue.front().empty()){
@@ -232,11 +236,26 @@ struct Processor{
 
 
   void Premeted(){
-
+	CPUQueue.push(CPUQueue.front());
+	CPUQueue.pop();
   }
 
+
+  void print(){
+    printf("CPUqueue size %d\t", CPUQueue.size());
+    queue<Process> temp;
+    while (!CPUQueue.empty()){
+      temp.push(CPUQueue.front());
+      cout << CPUQueue.front().size() << "  ";
+      CPUQueue.pop();
+    }
+    CPUQueue=temp;
+    printf("IOqueue size %d\t", CPUQueue.size());
+  }
+  
+
   Processor(){
-    id=-1;
+    id=-1240;
   }
   
 };
