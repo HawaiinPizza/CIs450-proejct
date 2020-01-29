@@ -57,6 +57,7 @@ struct Process{
   int waitTime=0;
   int runTime=0;
   int IOTime=0;
+  int arrTime;
 
   void incWait(){
     waitTime++;
@@ -76,7 +77,8 @@ struct Process{
     id=-1240;
   }
 
-  Process(int* Arr, int size, int ProcessorID){
+  Process(int* Arr, int size, int ProcessorID, int ArrTime){
+    arrTime=ArrTime;
     for(int i=0; i<size; i++){
       if(i%2==0)
 	jobs.push(Event(Arr[i], ProcessorID, true));
@@ -190,13 +192,11 @@ struct Processor{
       //Push process back onto queue, as well as next IO opeartion
       else{
 	IOQueue.push(CPUQueue.front());
-	printf("Putting job %d onto IO, which has size %d", CPUQueue.front().id, IOQueue.back().size());
 	CPUQueue.pop();
       }
     }
     else{
       CPUQueue.push(IOQueue.front());
-	printf("Putting job %d onto CPU", CPUQueue.back().id);
       IOQueue.pop();
     }
   }
@@ -242,7 +242,7 @@ struct Processor{
 
 
   void print(){
-    printf("CPUqueue size %d\t", CPUQueue.size());
+    printf("CPUqueue:%d ", CPUQueue.size());
     queue<Process> temp;
     while (!CPUQueue.empty()){
       temp.push(CPUQueue.front());
@@ -250,7 +250,7 @@ struct Processor{
       CPUQueue.pop();
     }
     CPUQueue=temp;
-    printf("IOqueue size %d\t", CPUQueue.size());
+    printf("IOqueue size %d", CPUQueue.size());
   }
   
 

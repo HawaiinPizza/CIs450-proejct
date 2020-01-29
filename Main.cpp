@@ -14,102 +14,87 @@ int main(){
   int atemp1[5]={2,5,8,7,4};
   int atemp2[7]={8,2,10,2,7,5,6};
   int atemp3[1]={4};
-  Process ptemp1(atemp1, 5, 1);
-  Process ptemp2(atemp2, 7, 2);
-  Process ptemp3(atemp3, 1, 3);
+  Process ptemp1(atemp1, 5, 1, 3);
+  Process ptemp3(atemp2, 7, 2, 6);
+  Process ptemp2(atemp3, 1, 3, 5);
   Processor CPU;
-  CPU.push(ptemp2);
-  CPU.push(ptemp1);
-  CPU.push(ptemp3);
-  int Quant=15;
+  queue<Process> PPtemp;
+  PPtemp.push(ptemp1);
+  PPtemp.push(ptemp2);
+  PPtemp.push(ptemp3);
+  int Quant=3;
 
   int i=0;
   bool io_idle=true;
   bool cpu_idle=true;
 
-  while(i<50){
+  while(i<100){
     printf("Time:%d\t", i);
     // JObs arrived
-    
+    if(PPtemp.front().arrTime==i){
+      CPU.push(PPtemp.front());
+      printf("Job %i has arrived\t", PPtemp.front().id);
+      PPtemp.pop();
+    }
 
-    printf("CPUQueue:%d IOQueue:%d\t", CPU.size(), CPU.size(false));
+
     
-    // IO Idle
-    if(io_idle  || CPU.IO.id==-11){
-      if(CPU.empty(false) || CPU.IO.id==-11  ){
-	printf("The IO processor is empty\t");
-	}
-	else{
-	  CPU.setJob(false);
-	  if(CPU.IO.id!=-11){
-	    printf("IO new job process of %d \t", CPU.IO.id);
-	    io_idle=false;
-	  }
-	  else
-	    printf("The IO processor is empty\t");
-	}
+    /* IO Idle*/
+    if(io_idle){
+
+      if(CPU.empty(false)){
+	printf("IO is  idle\t");
+      }
+      else{
+	CPU.setJob(false);
+	printf("New IO job of %d\t", CPU.IO.id);
+	io_idle=false;
+      }
+      
     }
     else{
       --CPU;
-      printf("IO ran job  of %d tiem %d\t\t", CPU.IO.id, CPU.IO.timeleft);
-	if(CPU.IO.timeleft==0){
-	  printf ("IOjob blocked\t");
-	  io_idle=true;
-	  if(CPU.size(false)>1){
-	    CPU.PopBack(false);
-	    CPU.setJob (false);
-	  }
-	  else{
-	    printf("IO job finish but no next IO job\t");
-	  }
-	}
+      printf("IO Time %d ID %d\t", CPU.IO.timeleft, CPU.IO.id);
+      if(CPU.IO.State==IO_DONE){
+	io_idle=true;
+	CPU.PopBack(false);
+	printf("IO Done\t");
+      }
     }
 
-    //CPU I
-    if(cpu_idle || CPU.CPU.id==-11 ){
-      if(CPU.empty() || CPU.CPU.id == -11){
-	  printf("The CPU processor is empty\t");
-	}
-	else{
-	  CPU.setJob();
-	  if(CPU.CPU.id != -11){
-	  printf("CPU got new job process of %d \t", CPU.CPU.id);
-	  cpu_idle=false;
-	  }
-	  else{
-	    printf("The CPU processor is empty\t");
-	  }
-	}
+    printf(":\t\t");
+    /*CPU Idle*/
+    if(cpu_idle){
+      if(CPU.empty()){
+	printf("CPU is idle\t");
+
+      }
+      else{
+	CPU.setJob();
+	printf("New CPU job of %d\t", CPU.CPU.id);
+	cpu_idle=false;
+
+      }
     }
     else{
       CPU--;
-      printf("CPU has job process of %d tiem %d\t", CPU.CPU.id, CPU.CPU.timeleft);
-      //Put in staticis here.
-      if(Quant <= CPU.CPU.timerun){
-	printf ("FUCK THIS PREMETEGINIGN\t");
-	CPU.Premeted();
-	CPU.setJob();
+      printf("CPU Time %d ID %d\t", CPU.CPU.timeleft, CPU.CPU.id);
+      if(CPU.CPU.State==IO_REQUEST || CPU.CPU.timeleft == 0){
 	cpu_idle=true;
+	CPU.PopBack();
+	printf("CPU Done\t");
       }
-      else{
-	if(CPU.CPU.timeleft==0){
-	  printf ("This CPUjob is blocked\t");
-	  if(CPU.size()>1){
-	    CPU.PopBack();
-	    CPU.setJob ();
-	    cpu_idle=true;
-	  }
-	  else{
-	    printf("CPU job finish but no next CPU job\t");
-	  }
-	}
-      
+      else if (CPU.CPU.timerun>=Quant){
+	cpu_idle=true;
+	CPU.Premeted();
+	printf("CPU IS PREMETD\t");
       }
-
     }
 
+
+    printf(":\t");
     // Print contents of readyqueue
-    CPU.print();
+    //CPU.print();
     
 
     printf("\n");
