@@ -159,8 +159,11 @@ struct Processor{
 	return true;
       }
       else
+	printf("TTHE SIZE IS EMPTY");
+      CPUQueue.pop();
 	return false;
       }
+
     else{
       if(!IOQueue.front().empty()){
 	IO=IOQueue.front().pop();
@@ -181,7 +184,7 @@ struct Processor{
 	CPUQueue.pop();
       }
       else{
-	printf("%d is going to be terminated", CPUQueue.front().id);
+	printf("\t%d is going to be terminated", CPUQueue.front().id);
 	CPUQueue.pop();
       }
     }
@@ -194,8 +197,10 @@ struct Processor{
   }
   
   void Premeted(){
+    printf("%d SIZe id %d ", CPUQueue.size(), CPUQueue.front().id);
 	CPUQueue.push(CPUQueue.front());
 	CPUQueue.pop();
+    printf("%d SIZe id %d ", CPUQueue.size(), CPUQueue.front().id);
   }
 
   //Queue operators
